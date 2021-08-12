@@ -1,0 +1,69 @@
+service: serverless-pre-signed
+variablesResolutionMode: 20210326
+provider:
+  name: aws
+  runtime: nodejs14.x
+  lambdaHashingVersion: 20201221
+  memorySize: 256
+  stage: ${opt:stage, 'develop'}
+  region: ${opt:region, 'eu-west-1'}
+  environment:
+    BUCKET_NAME: ${self:custom.bucketName}
+    FILE_NAME: ${self:custom.fileName}
+    STAGE: ${opt:stage, self:provider.stage}
+  apiGateway:
+    shouldStartNameWithService: true
+  iam:
+    role:
+      statements:
+        - Effect: "Allow"
+          Action:
+            - "s3:ListObjects"
+            - "s3:GetObject"
+            - "s3:PutObject"
+          Resource:
+            - "arn:aws:s3:::${self:custom.bucketName}"
+            - "arn:aws:s3:::${self:custom.bucketName}/*"
+# serverless plugins
+plugins:
+  - serverless-webpack
+  - serverless-s3-sync
+package:
+  individually: true
+functions:
+  # function to get a file using a pre-signed download url
+  get-file:
+    handler: src/functions/get-file/get-file.handler
+    timeout: 10
+    events:
+      - http:
+          path: images/{id} # for this demo it only works with png images for simplicity
+          method: get
+  # function to upload an image
+  upload-file:
+    handler: src/functions/upload-file/upload-file.handler
+    timeout: 10
+    events:
+      - http:
+          path: images/{id} # for this demo it only works with png images for simplicity
+          method: put
+custom:
+  bucketName: s3-presigned-url-asset-bucket-${self:provider.stage}
+  fileName: 1.png
+  # this is the config for the s3sync plugin which will move all assets from src/assets into the s3 bucket
+  s3Sync:
+    - bucketName: ${self:custom.bucketName}
+      localDir: src/assets
+      acl: private
+  # this is the webpack config for the build
+  webpack:
+    webpackConfig: "webpack.config.js"
+    includeModules:
+      forceExclude:
+        - aws-sdk
+resources:
+  Resources:
+    AssetsBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.bucketName}
