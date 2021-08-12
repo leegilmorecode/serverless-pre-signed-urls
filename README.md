@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Practical example of using AWS S3 pre-signed URLs for uploading and downloading images to private S3 buckets. Supporting repo for the blog post: [Serverless AWS S3 pre-signed URLs 🚀](/)
+Practical example of using AWS S3 pre-signed URLs for uploading and downloading images to private S3 buckets. Supporting repo for the blog post: [Serverless AWS S3 pre-signed URLs 🚀](https://leejamesgilmore.medium.com/serverless-s3-pre-signed-urls-e52eebad8d2d)
 
 ### What are we building?
 
